@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Shakie</string>
+    <string name="action_settings">Settings</string>
+    <string name="textView1">The 3D Acceleration Values Are: </string>
+    <string name="textView2">Your accelerometer is not on.</string>
+    <string name="textView3">The Shake Detector Detects: </string>
+    <string name="textView4">Shake/ No Shake </string>
+    <string name="edit_message">Please Enter Your Threshold (8~15) </string>
+    <string name="button_start">START</string>
+    <string name="button_stop">STOP</string>
+    <string name="textView5">The Barometer Detects: </string>
+    <string name="textView6">Your barometer is not available.</string>
+    <string name="button_baro">Barometer</string>
+
+
+</resources>
