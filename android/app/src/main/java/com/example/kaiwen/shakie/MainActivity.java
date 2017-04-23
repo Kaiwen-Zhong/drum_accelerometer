@@ -165,6 +165,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.button_start:
 
                 edit_message = (EditText) findViewById(R.id.edit_message);
+                if (edit_message.getText().toString().trim().length() > 0) {
+                    Threshold = Double.parseDouble(edit_message.getText().toString());
+                }
 
                 break;
 
