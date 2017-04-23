@@ -17,6 +17,8 @@ import android.widget.Button;
 import java.lang.Math;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.media.*;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, OnClickListener {
 
@@ -31,12 +33,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView textView4;
     private TextView textView6;
     private EditText edit_message;
-    private boolean initialized;
     Button button_start;
     Button button_stop;
     Button button_baro;
     double Threshold;
 
+    MediaPlayer crash;
+    MediaPlayer snare;
+    MediaPlayer tom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,20 +54,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         button_start.setOnClickListener(this);
         button_stop.setOnClickListener(this);
         button_baro.setOnClickListener(this);
-        initialized = false;
 
 
         // create our sensor manager
         sm = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         // accelerometer, barometer sensor
-        accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        accelerometer = sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         barometer = sm.getDefaultSensor(Sensor.TYPE_PRESSURE);
 
         // assign textView
         textView2 = (TextView)findViewById(R.id.textView2);
         textView4 = (TextView)findViewById(R.id.textView4);
         textView6 = (TextView)findViewById(R.id.textView6);
+
+        Threshold = 1.0;
+
+        if (crash != null) {
+            return;
+        }
+        crash = MediaPlayer.create(getApplicationContext(), R.raw.crash1);
+
+        snare = MediaPlayer.create(getApplicationContext(), R.raw.snare1);
+
+        tom = MediaPlayer.create(getApplicationContext(), R.raw.tom1);
     }
 
     protected void onResume() {
@@ -100,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // TODO Auto-generated method stub
         Log.d("sensorchanged",event.toString());
 
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+        if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             x = event.values[0];
             y = event.values[1];
             z = event.values[2];
@@ -113,19 +127,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //Math.sqrt(Math.pow(x,2)+Math.pow(y,2)+Math.pow(z,2))
         double shake = Math.sqrt(x*x+y*y+z*z);
 
-        if (!initialized){
-            textView2.setText("0.0");
-            textView4.setText("");
-            textView6.setText("");
-        }
-        else if (shake < Threshold) {
-            textView4.setText("No Shake!");
-        }
-        else {
-            textView2.setText("X: " + x + "\nY: " + y + "\nZ: " + z);
-            textView4.setText("You Are Shaking!");
-        }
+        textView2.setText("X: " + x + (x>=Threshold ? " (SHAKING)" : "")
+                    + "\nY: " + y  + (y>=Threshold ? " (SHAKING)" : "")
+                    + "\nZ: " + z  + (z>=Threshold ? " (SHAKING)" : "") );
 
+        if (x>=Threshold) {
+            play(snare);
+        }
+        if (y>=Threshold) {
+            play(tom);
+        }
+        if (z>=Threshold) {
+            play(crash);
+        }
+//        else if (shake < Threshold) {
+//            textView4.setText("No Shake!");
+//        }
+//        else {
+//            textView2.setText("X: " + x + "\nY: " + y + "\nZ: " + z);
+//            textView4.setText("You Are Shaking!");
+//        }
+
+    }
+
+    private void play(MediaPlayer m) {
+        if (m.isPlaying()) {
+            m.pause();
+            m.seekTo(0);
+        }
+        m.start();
     }
 
     @Override
@@ -135,23 +165,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.button_start:
 
                 edit_message = (EditText) findViewById(R.id.edit_message);
-                initialized = true;
 
-
-                if (edit_message.getText().toString().trim().length() > 0) {
-                    Threshold = Double.parseDouble(edit_message.getText().toString());
-                }
-                else {
-                    Threshold = 10;
-                }
-
-                sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-                break;
-
-            case R.id.button_stop:
-                sm.unregisterListener(this);
-                textView4.setText("You Stopped Shakie Detector!");
-                textView6.setText("");
                 break;
 
             case R.id.button_baro:
